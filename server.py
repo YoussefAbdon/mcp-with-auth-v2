@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 mcp = FastMCP(
     "simple-mcp-server",
     host="0.0.0.0",
-    port=8000,
 )
 
 
@@ -65,8 +64,7 @@ if __name__ == "__main__":
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                          Simple MCP Server                                    ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
-║  Server running on: http://0.0.0.0:8000                                      ║
-║  MCP Endpoint:      http://localhost:8000/mcp/v1/sse                         ║
+║  MCP Server - Ready for deployment                                           ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 Available Tools:
@@ -78,11 +76,7 @@ Available Tools:
 Available Resources:
   • demo://ping         - Simple ping resource
 
-Testing the server:
-  MCP Inspector: http://localhost:8000
-
 Starting server...
 """)
 
-    # Use FastMCP's built-in run method
     mcp.run(transport='streamable-http')
