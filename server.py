@@ -61,8 +61,6 @@ def get_server_info() -> dict:
 # Main
 # ============================================================================
 if __name__ == "__main__":
-    import uvicorn
-
     print("""
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                          Simple MCP Server                                    ║
@@ -86,9 +84,5 @@ Testing the server:
 Starting server...
 """)
 
-    uvicorn.run(
-        mcp.get_asgi_app(),
-        host="0.0.0.0",
-        port=8000,
-        log_level="info"
-    )
+    # Use FastMCP's built-in run method
+    mcp.run(transport='streamable-http')
