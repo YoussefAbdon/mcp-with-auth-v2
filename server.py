@@ -85,12 +85,12 @@ mcp = FastMCP(
     "simple-mcp-server",
     host="0.0.0.0",
     port=8000,
-    # token_verifier=token_verifier,
-    # auth=AuthSettings(
-    #     issuer_url=AnyHttpUrl(f"https://{AUTH0_DOMAIN}/"),
-    #     resource_server_url=AnyHttpUrl(RESOURCE_SERVER_URL),
-    #     required_scopes=["openid", "profile", "email"],
-    # ),
+    token_verifier=token_verifier,
+    auth=AuthSettings(
+        issuer_url=AnyHttpUrl(f"https://{AUTH0_DOMAIN}/"),
+        resource_server_url=AnyHttpUrl(RESOURCE_SERVER_URL),
+        required_scopes=["openid", "profile", "email"],
+    ),
 )
 
 
