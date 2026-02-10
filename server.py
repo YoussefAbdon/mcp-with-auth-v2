@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # Hardcoded Config
 # ============================================================================
 AUTH0_DOMAIN = "dev-bm0upkhxllrygh78.us.auth0.com"
-AUTH0_AUDIENCE = "https://web-production-8b5fa.up.railway.app"
+AUTH0_AUDIENCE = "https://web-production-8b5fa.up.railway.app/mcp"
 RESOURCE_SERVER_URL = "https://web-production-8b5fa.up.railway.app/mcp"
 
 
