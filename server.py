@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 mcp = FastMCP(
     "simple-mcp-server",
     host="0.0.0.0",
+    port=8000,
 )
 
 
