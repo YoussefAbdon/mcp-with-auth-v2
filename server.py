@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 AUTH0_DOMAIN = "dev-bm0upkhxllrygh78.us.auth0.com"
 AUTH0_AUDIENCE = "https://web-production-8b5fa.up.railway.app/mcp"
-RESOURCE_SERVER_URL = "https://web-production-8b5fa.up.railway.app/mcp"
+RESOURCE_SERVER_URL = "https://web-production-8b5fa.up.railway.app"
 
 
 # ============================================================================
@@ -89,7 +89,7 @@ mcp = FastMCP(
     auth=AuthSettings(
         issuer_url=AnyHttpUrl(f"https://{AUTH0_DOMAIN}/"),
         resource_server_url=AnyHttpUrl(RESOURCE_SERVER_URL),
-        required_scopes=["openid", "profile", "email"],
+        required_scopes=[],
     ),
 )
 
