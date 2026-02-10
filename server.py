@@ -2,6 +2,7 @@
 Simple MCP Server - No Authentication (for deployment testing)
 """
 import logging
+import os
 from mcp.server.fastmcp import FastMCP
 
 # Configure logging
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 mcp = FastMCP(
     "simple-mcp-server",
     host="0.0.0.0",
-    port=8000,
+    port=int(os.environ.get("PORT", 8000))
 )
 
 
