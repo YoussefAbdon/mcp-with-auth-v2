@@ -33,7 +33,7 @@ class Auth0TokenVerifier(TokenVerifier):
         self.audience = audience
         self.algorithms = ["RS256"]
         self.jwks_url = f"https://{domain}/.well-known/jwks.json"
-        self.issuer = f"https://{domain}/"
+        self.issuer = f"https://{domain}"
         self.jwks_client = PyJWKClient(self.jwks_url)
 
     async def verify_token(self, token: str) -> Optional[AccessToken]:
@@ -87,7 +87,7 @@ mcp = FastMCP(
     port=8000,
     token_verifier=token_verifier,
     auth=AuthSettings(
-        issuer_url=AnyHttpUrl(f"https://{AUTH0_DOMAIN}/"),
+        issuer_url=AnyHttpUrl(f"https://{AUTH0_DOMAIN}"),
         resource_server_url=AnyHttpUrl(RESOURCE_SERVER_URL),
         required_scopes=["profile", "email"],
     ),
