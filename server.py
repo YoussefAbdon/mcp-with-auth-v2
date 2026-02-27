@@ -87,9 +87,9 @@ mcp = FastMCP(
     port=8000,
     token_verifier=token_verifier,
     auth=AuthSettings(
-        issuer_url=AnyHttpUrl(f"https://{AUTH0_DOMAIN}"),
+        issuer_url=AnyHttpUrl(f"https://{AUTH0_DOMAIN}/"),
         resource_server_url=AnyHttpUrl(RESOURCE_SERVER_URL),
-        required_scopes=["email", "profile", "address"],
+        required_scopes=["email", "profile"],
     ),
 )
 
