@@ -1,88 +1,68 @@
-"""
-Simple MCP Server with Auth0 OAuth Authentication
-"""
-import logging
-from typing import Optional
+"""MCP server for simple-mcp."""
 
-from mcp.server.fastmcp import FastMCP
-from mcp.server.auth.settings import AuthSettings
-from mcp.server.auth.provider import AccessToken, TokenVerifier
-from pydantic import AnyHttpUrl
+import os
+from typing import Annotated
+from urllib.parse import urlencode
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from fastmcp import FastMCP
+from pydantic import Field
+from starlette.responses import PlainTextResponse, RedirectResponse
 
-# ============================================================================
-# Hardcoded Config
-# ============================================================================
-AUTH0_DOMAIN = "identity-oauth.noon.com"
-AUTH0_AUDIENCE = "https://web-production-8b5fa.up.railway.app/mcp"
-RESOURCE_SERVER_URL = "https://web-production-8b5fa.up.railway.app/mcp"
+mcp = FastMCP("simple-mcp")
 
 
-# ============================================================================
-# Token Verifier (always succeeds - for testing)
-# ============================================================================
-class PassthroughTokenVerifier(TokenVerifier):
-    """Always returns a valid token - for deployment testing only."""
-
-    async def verify_token(self, token: str) -> Optional[AccessToken]:
-        return AccessToken(
-            token=token,
-            client_id="test-client",
-            scopes=["family_name", "picture"],
-            expires_at=None,
-            resource=RESOURCE_SERVER_URL,
-        )
+@mcp.custom_route("/public/hc", methods=["GET"])
+async def health_check(request):
+    return PlainTextResponse("OK")
 
 
-# ============================================================================
-# MCP Server
-# ============================================================================
-token_verifier = PassthroughTokenVerifier()
+@mcp.custom_route("/inspector", methods=["GET"])
+async def inspector_redirect(request):
+    if os.getenv("ENV") not in ("dev", "local"):
+        return PlainTextResponse("Not available", status_code=404)
 
-mcp = FastMCP(
-    "simple-mcp-server",
-    host="0.0.0.0",
-    port=8000,
-    token_verifier=token_verifier,
-    auth=AuthSettings(
-        issuer_url=AnyHttpUrl(f"https://{AUTH0_DOMAIN}/"),
-        resource_server_url=AnyHttpUrl(RESOURCE_SERVER_URL),
-        required_scopes=["family_name", "picture"],
-    ),
-)
+    service_name = os.getenv("SERVICE_NAME", "localhost")
+    server_url = f"http://{service_name}/mcp"
+    params = urlencode(
+        {
+            "transport": "streamable-http",
+            "serverUrl": server_url,
+            "MCP_PROXY_FULL_ADDRESS": "https://mcp-inspector.noondv.com/proxy",
+        }
+    )
+    return RedirectResponse(f"https://mcp-inspector.noondv.com/?{params}")
 
 
 @mcp.tool()
-def add(a: int, b: int) -> int:
+def add(
+    a: Annotated[int, Field(description="First number.")],
+    b: Annotated[int, Field(description="Second number.")],
+) -> int:
     """Add two numbers together."""
     return a + b
 
 
 @mcp.tool()
-def multiply(a: int, b: int) -> int:
+def multiply(
+    a: Annotated[int, Field(description="First number.")],
+    b: Annotated[int, Field(description="Second number.")],
+) -> int:
     """Multiply two numbers together."""
     return a * b
 
 
 @mcp.tool()
-def greet(name: str) -> str:
+def greet(
+    name: Annotated[str, Field(description="Name to greet.")],
+) -> str:
     """Greet someone by name."""
-    return f"Hello, {name}! Welcome to the MCP server."
+    return f"Hello, {name}!"
 
 
 @mcp.tool()
 def get_server_info() -> dict:
     """Get information about this MCP server."""
-    return {
-        "name": "simple-mcp-server",
-        "version": "1.0.0",
-        "status": "running",
-        "auth": "Auth0 OIDC",
-    }
+    return {"name": "simple-mcp", "version": "1.0.0", "status": "running"}
 
 
-if __name__ == "__main__":
-    print("Starting MCP Server with Auth0 OAuth...")
-    mcp.run(transport="streamable-http")
+app = mcp.http_app(stateless_http=True)
