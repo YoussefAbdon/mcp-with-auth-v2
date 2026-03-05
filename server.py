@@ -45,4 +45,4 @@ def get_server_info() -> dict:
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(mcp.run_http_async(host="0.0.0.0", port=8080))
+    asyncio.run(mcp.run_http_async(host="0.0.0.0", port=8000))
