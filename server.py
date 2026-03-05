@@ -43,7 +43,7 @@ def get_server_info() -> dict:
     return {"name": "identity-mcp", "version": "1.0.0", "status": "running"}
 
 
-app = mcp.http_app(stateless_http=True)
+app = mcp.http_app()
 
 if __name__ == "__main__":
     mcp.run()
