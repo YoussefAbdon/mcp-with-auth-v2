@@ -1,6 +1,5 @@
-"""
-Simple MCP Server with Auth0 OAuth Authentication
-"""
+"""MCP Server for identity-api."""
+
 import logging
 from typing import Optional
 
@@ -8,23 +7,26 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.auth.settings import AuthSettings
 from mcp.server.auth.provider import AccessToken, TokenVerifier
 from pydantic import AnyHttpUrl
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse
+from starlette.routing import Mount, Route
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# Hardcoded Config
+# Config
 # ============================================================================
-AUTH0_DOMAIN = "identity-oauth.noon.com"
-AUTH0_AUDIENCE = "https://web-production-8b5fa.up.railway.app/mcp"
-RESOURCE_SERVER_URL = "https://web-production-8b5fa.up.railway.app/mcp"
+OAUTH_ISSUER = "https://identity-oauth.noon.com/"
+RESOURCE_SERVER_URL = "https://identity-mcp.noon.com/mcp"
 
 
 # ============================================================================
-# Token Verifier (always succeeds - for testing)
+# Token Verifier (passthrough - for testing only)
 # ============================================================================
 class PassthroughTokenVerifier(TokenVerifier):
-    """Always returns a valid token - for deployment testing only."""
+    """Always returns a valid token - for testing only."""
 
     async def verify_token(self, token: str) -> Optional[AccessToken]:
         return AccessToken(
@@ -39,15 +41,11 @@ class PassthroughTokenVerifier(TokenVerifier):
 # ============================================================================
 # MCP Server
 # ============================================================================
-token_verifier = PassthroughTokenVerifier()
-
 mcp = FastMCP(
-    "simple-mcp-server",
-    host="0.0.0.0",
-    port=8000,
-    # token_verifier=token_verifier,
+    "identity-mcp",
+    # token_verifier=PassthroughTokenVerifier(),
     # auth=AuthSettings(
-    #     issuer_url=AnyHttpUrl(f"https://{AUTH0_DOMAIN}/"),
+    #     issuer_url=AnyHttpUrl(OAUTH_ISSUER),
     #     resource_server_url=AnyHttpUrl(RESOURCE_SERVER_URL),
     #     required_scopes=["family_name", "picture"],
     # ),
@@ -69,20 +67,25 @@ def multiply(a: int, b: int) -> int:
 @mcp.tool()
 def greet(name: str) -> str:
     """Greet someone by name."""
-    return f"Hello, {name}! Welcome to the MCP server."
+    return f"Hello, {name}!"
 
 
 @mcp.tool()
 def get_server_info() -> dict:
     """Get information about this MCP server."""
-    return {
-        "name": "simple-mcp-server",
-        "version": "1.0.0",
-        "status": "running",
-        "auth": "Auth0 OIDC",
-    }
+    return {"name": "identity-mcp", "version": "1.0.0", "status": "running"}
 
 
-if __name__ == "__main__":
-    print("Starting MCP Server with Auth0 OAuth...")
-    mcp.run(transport="streamable-http")
+# ============================================================================
+# ASGI app - wraps MCP with a health check route
+# ============================================================================
+async def health_check(_: Request) -> PlainTextResponse:
+    return PlainTextResponse("OK")
+
+
+app = Starlette(
+    routes=[
+        Route("/public/hc", health_check),
+        Mount("/", app=mcp.streamable_http_app()),
+    ]
+)
