@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 # MCP Server
 # ============================================================================
-mcp = FastMCP("identity-mcp")
+mcp = FastMCP("identity-mcp", host="0.0.0.0", port=8000)
 
 
 @mcp.custom_route("/public/hc", methods=["GET"])
