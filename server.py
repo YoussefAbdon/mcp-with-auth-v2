@@ -7,10 +7,8 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.auth.settings import AuthSettings
 from mcp.server.auth.provider import AccessToken, TokenVerifier
 from pydantic import AnyHttpUrl
-from starlette.applications import Starlette
-from starlette.requests import Request
 from starlette.responses import PlainTextResponse
-from starlette.routing import Mount, Route
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -77,15 +75,19 @@ def get_server_info() -> dict:
 
 
 # ============================================================================
-# ASGI app - wraps MCP with a health check route
+# ASGI middleware - intercepts /public/hc, passes everything else (including
+# lifespan events) straight through to the MCP app.
 # ============================================================================
-async def health_check(_: Request) -> PlainTextResponse:
-    return PlainTextResponse("OK")
+class HealthCheckMiddleware:
+    def __init__(self, asgi_app: ASGIApp) -> None:
+        self.app = asgi_app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http" and scope["path"] == "/public/hc":
+            await PlainTextResponse("OK")(scope, receive, send)
+        else:
+            await self.app(scope, receive, send)
 
 
-app = Starlette(
-    routes=[
-        Route("/public/hc", health_check),
-        Mount("/", app=mcp.streamable_http_app()),
-    ]
-)
+app = HealthCheckMiddleware(mcp.streamable_http_app())
+
