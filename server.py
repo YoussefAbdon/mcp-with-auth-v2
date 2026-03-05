@@ -43,7 +43,6 @@ def get_server_info() -> dict:
     return {"name": "identity-mcp", "version": "1.0.0", "status": "running"}
 
 
-app = mcp.http_app()
-
 if __name__ == "__main__":
-    mcp.run()
+    import asyncio
+    asyncio.run(mcp.run_http_async(host="0.0.0.0", port=8080))
