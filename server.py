@@ -44,5 +44,16 @@ def get_server_info() -> dict:
 
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(mcp.run_http_async(host="0.0.0.0", port=8000))
+    import uvicorn
+    from starlette.middleware.cors import CORSMiddleware
+
+    uvicorn.run(
+        CORSMiddleware(
+            app=mcp.http_app(),
+            allow_origins=["*"],
+            allow_methods=["*"],
+            allow_headers=["*"],
+        ),
+        host="0.0.0.0",
+        port=8000,
+    )
