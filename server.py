@@ -1,12 +1,8 @@
 """MCP Server for identity-api."""
 
 import logging
-from typing import Optional
 
 from mcp.server.fastmcp import FastMCP
-from mcp.server.auth.settings import AuthSettings
-from mcp.server.auth.provider import AccessToken, TokenVerifier
-from pydantic import AnyHttpUrl
 from starlette.responses import PlainTextResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
@@ -14,40 +10,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# Config
-# ============================================================================
-OAUTH_ISSUER = "https://identity-oauth.noon.com/"
-RESOURCE_SERVER_URL = "https://identity-mcp.noon.com/mcp"
-
-
-# ============================================================================
-# Token Verifier (passthrough - for testing only)
-# ============================================================================
-class PassthroughTokenVerifier(TokenVerifier):
-    """Always returns a valid token - for testing only."""
-
-    async def verify_token(self, token: str) -> Optional[AccessToken]:
-        return AccessToken(
-            token=token,
-            client_id="test-client",
-            scopes=["family_name", "picture"],
-            expires_at=None,
-            resource=RESOURCE_SERVER_URL,
-        )
-
-
-# ============================================================================
 # MCP Server
 # ============================================================================
-mcp = FastMCP(
-    "identity-mcp",
-    # token_verifier=PassthroughTokenVerifier(),
-    # auth=AuthSettings(
-    #     issuer_url=AnyHttpUrl(OAUTH_ISSUER),
-    #     resource_server_url=AnyHttpUrl(RESOURCE_SERVER_URL),
-    #     required_scopes=["family_name", "picture"],
-    # ),
-)
+mcp = FastMCP("identity-mcp")
 
 
 @mcp.tool()
@@ -90,4 +55,3 @@ class HealthCheckMiddleware:
 
 
 app = HealthCheckMiddleware(mcp.streamable_http_app())
-
