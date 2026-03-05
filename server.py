@@ -43,17 +43,7 @@ def get_server_info() -> dict:
     return {"name": "identity-mcp", "version": "1.0.0", "status": "running"}
 
 
-if __name__ == "__main__":
-    import uvicorn
-    from starlette.middleware.cors import CORSMiddleware
+app = mcp.http_app(stateless_http=True)
 
-    uvicorn.run(
-        CORSMiddleware(
-            app=mcp.http_app(),
-            allow_origins=["*"],
-            allow_methods=["*"],
-            allow_headers=["*"],
-        ),
-        host="0.0.0.0",
-        port=8000,
-    )
+if __name__ == "__main__":
+    mcp.run()
