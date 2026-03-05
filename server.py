@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 # MCP Server
 # ============================================================================
-mcp = FastMCP("identity-mcp", host="0.0.0.0", port=8000)
+mcp = FastMCP("identity-mcp")
 
 
 @mcp.custom_route("/public/hc", methods=["GET"])
@@ -44,4 +44,5 @@ def get_server_info() -> dict:
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    import asyncio
+    asyncio.run(mcp.run_http_async(host="0.0.0.0", port=8000))
